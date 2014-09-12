@@ -195,6 +195,7 @@ void* mod_create_server_config(pool* p, server_rec* s) {
 }
 
 static void mod_html_end(request_rec* r) {
+	//SYSTEMTIME sys_time; ::GetSystemTime(&sys_time);
 	::ap_rputs("</body>\r\n</html>", r);
 }
 
@@ -249,6 +250,7 @@ int mod_handler(request_rec* r) {
 	 *	если требуется отправить только заголовок (HEAD запрос), то ничего не делаем
 	 */
 	if( !r->header_only ) {
+		//SYSTEMTIME sys_time; ::GetSystemTime(&sys_time);
 		::ap_soft_timeout(MOD_NAME, r);
 		ScopeGuard sg_ap_kill_timeout(MakeGuard(&::ap_kill_timeout, r));
 
@@ -262,48 +264,32 @@ int mod_handler(request_rec* r) {
 			// то он будет просто проигнорирован. Не забывайте про эту особенность, когда будете верстать свой сайт. 
 			// Как вариант, мета-тег X-UA-Compatible можно использовать для проверки отображения сайта под разными 
 			// версиями IE, не устанавливая сами браузеры, а имея только один установленный IE8.
-			"\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=8\" />\r\n"
+			// <meta http-equiv="X-UA-Compatible" content="IE=8"/>
+			"\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\" />\r\n"
 			"\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />\r\n"
-			"\t<meta http-equiv=\"Expires\" content=\"immediately\"/ />\r\n"
+			"\t<meta http-equiv=\"Expires\" content=\"immediately\" />\r\n"
 			"\t<meta name=\"robots\" content=\"noindex,nofollow\" />\r\n"
 			"\t<meta name=\"document-state\" content=\"dynamic\" />\r\n"
 			"\t<meta name=\"Pragma\" content=\"no-cache\" />\r\n"
+			"\t<style>\r\n"
+			"\t.panel {\r\n"
+			"\t\tfloat: left;\r\n"
+			"\t\twidth: 20%;\r\n"
+			"\t}\r\n"
+			"\t.content {\r\n"
+			"\t\toverflow: hidden;\r\n"
+			"\t}\r\n"
+			"\t</style>\r\n"
 			"\t<link rel=\"stylesheet\" media=\"all\" type=\"text/css\" href=\"");
 		//! в элементе <link ...> заголовка настройка таблицы стилей использует config_mod_url
 		if( 0==config_mod_url ) config_mod_url = "mod_phone_billing";
 		html_header.append(config_mod_url); 
-		html_header.append(".css\" />\r\n");
-		/*
-		html_header.append(
+		html_header.append(".css\" />\r\n"
 			//"\t<link rel=\"stylesheet\" type=\"text/css\" media=\"screen\" href=\"//www.ibm.com/common/v14/screen.css\"/>
 			//"\t<link rel=\"stylesheet\" type=\"text/css\" media=\"print\" href=\"//www.ibm.com/common/v14/print.css\"/>
-			"\t<style>\r\n"
-			"\t.cell_btn {\r\n"
-			"\t	border-width: 0px;\r\n"
-			"\t	background-color: #FFFFFF;\r\n"
-			"\t	font-size: 11pt;\r\n"
-			"\t	font-family: Verdana, Arial, Helvetica;\r\n"
-			"\t	cursor: pointer;\r\n"
-			"\t	cursor: hand;\r\n"
-			"\t}\r\n"
-			"\t.tbl_cell {\r\n"
-  			"\t	display: table-cell;\r\n"
-			"\t	font-size: 12pt;\r\n"
-			"\t	font-family: Arial;\r\n"
-	//		"\t	width: 30px;\r\n"
-	//		"\t	height: 1px;\r\n"
-			"\t	border: 2px solid #777777;\r\n"
-	//		"\tpadding: 1em;\r\n"
-			"\t}\r\n"
-			"\t</style>\r\n");
-	//"\t<script type=\"text/javascript\">\r\n"
-	//"\t\tfunction dataField(f){\r\n"
-	//"\t\talert(\"Вы ввели: \" + f.value);\r\n"
-	//"\t\t}\r\n"
-	//"\t</script>\r\n"
-		*/
-		html_header.append("</head>\r\n"
-			"<body>\r\n");
+			"</head>\r\n"
+			"<body>\r\n"
+			);
 		::ap_rputs(html_header.c_str(), r); 
 		ScopeGuard sg_mod_html_end(MakeGuard(&::mod_html_end, r));
 	
